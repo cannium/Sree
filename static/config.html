@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Configuration</title>
+    <link rel="shortcut icon" href="/image/favicon.ico">
+    <link href="/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/css/style.css" rel="stylesheet" type="text/css"/>
+    <link href="/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/css/validationEngine.jquery.css" rel="stylesheet" type="text/css"/>
+</head>
+<body class="page-header-fixed" id="configuration">
+
+<div class="nav">
+    <ul class="sidebar_menu height100">
+        <li>
+            <a href="/buckets.html" class="buckets">
+                <i class="icon-globe"></i>
+                <span class="title">Buckets</span>
+                <span class="selected"></span>
+            </a>
+        </li>
+        <li class="active">
+            <a href="/config.html" class="configuration">
+                <i class="icon-key"></i>
+                <span class="title">Configuration</span>
+                <span class="selected"></span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="page_body">
+    <div class="panel_head">
+        <span class="title">Configuration</span>
+    </div>
+    <div class="panel_body">
+        <div class="form-group row">
+            <label for="endpointInput" class="col-md-2 form-control-label">S3 Endpoint</label>
+            <div class="col-md-8">
+                <input class="form-control" id="endpointInput" placeholder="http://s3.amazonaws.com">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="regionInput" class="col-md-2 form-control-label">Region</label>
+            <div class="col-md-8">
+                <input class="form-control" id="regionInput" placeholder="us-east-1">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="accessKeyInput" class="col-md-2 form-control-label">Access Key ID</label>
+            <div class="col-md-8">
+                <input class="form-control" id="accessKeyInput" placeholder="">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="secretKeyInput" class="col-md-2 form-control-label">Secret Access Key</label>
+            <div class="col-md-8">
+                <input class="form-control" id="secretKeyInput" placeholder="">
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-md-10">
+                <button class="btn btn-info fr" id="save">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert_info" ></div>
+<script src="/js/lib/require.js"></script>
+<script src="/js/lib/require.config.js"></script>
+
+<script type="text/javascript">
+    require(['jquery'], function ($) {
+        var saveButton = $('#save');
+        saveButton.click(function() {
+            var endpoint = $('#endpointInput').val().trim(),
+                region = $('#regionInput').val().trim(),
+                accessKeyId = $('#accessKeyInput').val().trim(),
+                secretKeyId = $('#secretKeyInput').val().trim();
+            window.localStorage.setItem('endpoint', endpoint);
+            window.localStorage.setItem('region', region);
+            window.localStorage.setItem('accessKeyId', accessKeyId);
+            window.localStorage.setItem('secretKeyId', secretKeyId);
+            saveButton.blur();
+            saveButton.text('Saved');
+            saveButton.attr('class', 'btn btn-success fr');
+        });
+
+        var endpoint = window.localStorage.getItem('endpoint'),
+            region = window.localStorage.getItem('region'),
+            accessKeyId = window.localStorage.getItem('accessKeyId'),
+            secretKeyId = window.localStorage.getItem('secretKeyId');
+        $('#endpointInput').val(endpoint);
+        $('#regionInput').val(region);
+        $('#accessKeyInput').val(accessKeyId);
+        $('#secretKeyInput').val(secretKeyId);
+
+        $('input').on('input', function() {
+            saveButton.blur();
+            saveButton.text('Save');
+            saveButton.attr('class', 'btn btn-info fr');
+        });
+    });
+</script>
+</body>
+</html>
