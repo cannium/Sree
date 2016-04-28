@@ -9,6 +9,8 @@ Sree enables you to easily manage your files through Amazon S3 protocol. Just co
 # Installation
 
 ```
+> git clone https://github.com/cannium/Sree.git
+> cd Sree
 > sudo pip install flask pycurl
 > python app.py
 ```
