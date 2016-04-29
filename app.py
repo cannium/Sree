@@ -12,6 +12,8 @@ from flask import Response
 import pycurl
 
 import xmlparser
+import base64
+import hashlib
 
 app = Flask(__name__, static_url_path='')
 
@@ -85,10 +87,11 @@ def putcors():
       <ExposeHeader>ETag</ExposeHeader>
   </CORSRule>
 </CORSConfiguration>'''
+  content_md5 = base64.b64encode(hashlib.md5(cors).digest())
   c = pycurl.Curl()
   c.setopt(pycurl.URL, corsurl)
   c.setopt(pycurl.HTTPHEADER, ['Content-type: text/xml',
-                               'Content-MD5: u4TmUbStIytcsmc2YkcuXw==',
+                               'Content-MD5: ' + content_md5,
                                'Authorization: ' + s3auth,
                                'Date: ' + date])
   c.setopt(pycurl.CUSTOMREQUEST, 'PUT')
