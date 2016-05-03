@@ -84,7 +84,6 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
-                <input type="hidden" id="selected"/>
                 <h4 class="modal-title">Are you sure to delete
                     <span class="text-danger ui-ml-xs ui-mr-xs deleteInfo" id="bucketName"></span>?
                 </h4>
@@ -92,6 +91,23 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-cancel" data-dismiss="modal">Cancel</button>
                 <button type="button" id="deleteSubmit" class="btn btn-success">Sure</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="corsModal" tabindex="-1" role="dialog" data-backdrop="true">
+    <div class="modal-dialog" role="document" style="margin-top:80px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                <h4 class="modal-title">Set CORS for
+                    <span class="text-danger ui-ml-xs ui-mr-xs deleteInfo" id="corsBucket"></span>?
+                </h4>
+                <h5>If you meet "Network Failure" when listing bucket objects, try setting CORS for the bucket</h5>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-dismiss="modal">Cancel</button>
+                <button type="button" id="corsSubmit" class="btn btn-success">Set</button>
             </div>
         </div>
     </div>
@@ -133,7 +149,9 @@
                     targets: 2,
                     render: function(name) {
                         return '<div class="col-sm-6 small link_color ui-p-0 pointer deleteBucket" ' +
-                                'data-bucket="' + name + '">Delete Bucket</div>';
+                                'data-bucket="' + name + '">Delete Bucket</div>' +
+                                '<div class="col-sm-6 small link_color ui-p-0 pointer setCors" ' +
+                                'data-bucket="' + name + '">Set CORS</div>';
                     }
                 }, {
                     targets: '_all',
@@ -168,102 +186,124 @@
                 }
             })
         };
-        $(function () {
-            formatTable();
-            loadTable();
-            base.checkAll();
+        var putCors = function(bucketName, successCallback, failCallback) {
+            // Data needed for signature
+            var date = new Date().toGMTString();
+            var method = "PUT";
+            var contentmd5 = "u4TmUbStIytcsmc2YkcuXw==";
+            var contenttype = "text/xml";
+            var buf = "";
+            buf += method + "\n";
+            buf += contentmd5 + "\n";
+            buf += contenttype + "\n";
+            buf += date + "\n";
+            // we send the whole url because the api-server may not know
+            // where the s3 backend is
+            buf += "/" + bucketName + "/?cors";
+            var sig = AWS.util.crypto.hmac(AWS.config.secretAccessKey,
+                    buf, 'base64', 'sha1');
+            var AWSAuth = "AWS " + AWS.config.accessKeyId + ":" + sig;
+            var corsurl = AWS.config.endpoint + '/' + bucketName + "/?cors";
+            $.ajax({
+                url: "/putcors",
+                type: "PUT",
+                contentType: 'application/json; charset=UTF-8',
+                data: JSON.stringify({'url': corsurl, 's3auth': AWSAuth, 'date': date}),
+                success: successCallback,
+                error: failCallback
+            });
+        };
 
-            // create bucket
-            $("#addBtn").click(function () {
-                $("#name").val("");
-                $("#addModal").modal("show");
-            });
-            $('#addModal').on('shown.bs.modal', function () {
-                $('#name').focus();
-            });
-            $("#addSubmit").click(function () {
-                var bucketname = $("#name").val(),
-                    urlpresigned = base.getSignedUrl('createBucket',
-                                {Bucket: bucketname, Expires: 60});
-                $("#addModal").modal("hide");
-                $('#loading').show();
-                $.ajax({
-                    url: "/createbucket",
-                    type: "POST",
-                    contentType: 'application/json; charset=UTF-8',
-                    data: JSON.stringify({url: urlpresigned}),
-                    success: function (data, status, xhr) {
-                        $("#addModal").modal("hide");
+        formatTable();
+        loadTable();
+        base.checkAll();
 
-                        // Data needed for signature
-                        var date = new Date().toGMTString();
-                        var method = "PUT";
-                        var contentmd5 = "u4TmUbStIytcsmc2YkcuXw==";
-                        var contenttype = "text/xml";
-                        var buf = "";
-                        buf += method + "\n";
-                        buf += contentmd5 + "\n";
-                        buf += contenttype + "\n";
-                        buf += date + "\n";
-                        // we send the whole url because the api-server may not know
-                        // where the s3 backend is
-                        buf += "/" + bucketname + "/?cors";
-                        var sig = AWS.util.crypto.hmac(AWS.config.secretAccessKey,
-                                buf, 'base64', 'sha1');
-                        var AWSAuth = "AWS " + AWS.config.accessKeyId + ":" + sig;
-                        var corsurl = AWS.config.endpoint + '/' + bucketname + "/?cors";
-                        $.ajax({
-                            url: "/putcors",
-                            type: "PUT",
-                            contentType: 'application/json; charset=UTF-8',
-                            data: JSON.stringify({'url': corsurl, 's3auth': AWSAuth, 'date': date}),
-                            success: function (data) {
-                                base.alert2('Bucket "' + bucketname + '" created and CORS configured');
-                                loadTable();
-                            },
-                            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                var errorInfo = XMLHttpRequest.responseText;
-                                base.alertError(errorInfo == "" ?
-                                    'Bucket "' + bucketname + '" created but failed to configure CORS' : errorInfo);
-                            }
-                        });
-                    }, error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        var errorInfo = XMLHttpRequest.responseText;
-                        base.alertError(errorInfo == "" ? "Failed to create bucket" : errorInfo);
-                        $('#loading').hide();
-                    }
-
-                });
-            });
-            // Delete bucket
-            $("tbody").on('click', '.deleteBucket', function () {
-                var bucketName = $(this).attr('data-bucket');
-                $('#bucketName').text(bucketName);
-                $("#deleteModal").modal("show");
-            });
-            $("#deleteSubmit").click(function () {
-                var bucketName = $("#bucketName").text(),
-                    deleteBucketUrl = base.getSignedUrl('deleteBucket',
-                                {Bucket: bucketName});
-                $.ajax({
-                    url: "/deletebucket",
-                    type: "DELETE",
-                    contentType: 'application/json; charset=UTF-8',
-                    data: JSON.stringify({url: deleteBucketUrl}),
-                    success: function (data) {
+        // create bucket
+        $("#addBtn").click(function () {
+            $("#name").val("");
+            $("#addModal").modal("show");
+        });
+        $('#addModal').on('shown.bs.modal', function () {
+            $('#name').focus();
+        });
+        $("#addSubmit").click(function () {
+            var bucketname = $("#name").val(),
+                urlpresigned = base.getSignedUrl('createBucket',
+                            {Bucket: bucketname, Expires: 60});
+            $("#addModal").modal("hide");
+            $('#loading').show();
+            $.ajax({
+                url: "/createbucket",
+                type: "POST",
+                contentType: 'application/json; charset=UTF-8',
+                data: JSON.stringify({url: urlpresigned}),
+                success: function (data, status, xhr) {
+                    $("#addModal").modal("hide");
+                    putCors(bucketname, function (data) {
+                        base.alert2('Bucket "' + bucketname + '" created and CORS configured');
                         loadTable();
-                        base.alert2('"' + bucketName + '" has been deleted');
-                        $("#deleteModal").modal("hide");
-                    }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    }, function (XMLHttpRequest, textStatus, errorThrown) {
                         var errorInfo = XMLHttpRequest.responseText;
-                        if (XMLHttpRequest.status == 409) {
-                            errorInfo = "Please delete containing objects first";
-                        } else if ((XMLHttpRequest.status == 404)) {
-                            errorInfo = "Bucket does not exist";
-                        }
-                        base.alertError(errorInfo);
+                        base.alertError(errorInfo == "" ?
+                        'Bucket "' + bucketname + '" created but failed to configure CORS' : errorInfo);
+                    });
+                }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    var errorInfo = XMLHttpRequest.responseText;
+                    base.alertError(errorInfo == "" ? "Failed to create bucket" : errorInfo);
+                    $('#loading').hide();
+                }
+            });
+        });
+        // Delete bucket
+        $("tbody").on('click', '.deleteBucket', function () {
+            var bucketName = $(this).attr('data-bucket');
+            $('#bucketName').text(bucketName);
+            $("#deleteModal").modal("show");
+        });
+        $("#deleteSubmit").click(function () {
+            var bucketName = $("#bucketName").text(),
+                deleteBucketUrl = base.getSignedUrl('deleteBucket',
+                            {Bucket: bucketName});
+            $("#deleteModal").modal("hide");
+            $('#loading').show();
+            $.ajax({
+                url: "/deletebucket",
+                type: "DELETE",
+                contentType: 'application/json; charset=UTF-8',
+                data: JSON.stringify({url: deleteBucketUrl}),
+                success: function (data) {
+                    loadTable();
+                    base.alert2('"' + bucketName + '" has been deleted');
+                }, error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    var errorInfo = XMLHttpRequest.responseText;
+                    if (XMLHttpRequest.status == 409) {
+                        errorInfo = "Please delete containing objects first";
+                    } else if ((XMLHttpRequest.status == 404)) {
+                        errorInfo = "Bucket does not exist";
                     }
-                });
+                    base.alertError(errorInfo);
+                    $('#loading').hide();
+                }
+            });
+        });
+        // set CORS
+        $('tbody').on('click', '.setCors', function() {
+            var bucketName = $(this).attr('data-bucket');
+            $('#corsBucket').text(bucketName);
+            $('#corsModal').modal('show');
+        });
+        $('#corsSubmit').click(function () {
+            var bucketName = $('#corsBucket').text();
+            $('#corsModal').modal('hide');
+            $('#loading').show();
+            putCors(bucketName, function(data) {
+                base.alert2('Bucket "' + bucketName + '" CORS configured');
+                $('#loading').hide();
+            }, function(XMLHttpRequest, textStatus, errorThrown) {
+                var errorInfo = XMLHttpRequest.responseText;
+                base.alertError(errorInfo == "" ?
+                'Failed to configure CORS for bucket "' + bucketName + '"' : errorInfo);
+                $('#loading').hide();
             });
         });
     });
