@@ -1,5 +1,5 @@
 define(['base'], function (base) {
-    var isPublic = true;
+    var acl = window.localStorage.getItem('acl') || 'public-read';
     var upload_fn = {
         init: function() {
             this.uploaders = {};
@@ -184,17 +184,15 @@ define(['base'], function (base) {
                     console.log('ERROR', err);
                     return;
                 }
-                if(isPublic) {
-                    base.s3.putObjectAcl({
-                        Bucket: _this.bucketName,
-                        Key: _this.prefix + filename,
-                        ACL: 'public-read'
-                    }, function(err, data) {
-                        if(err) {
-                            base.alertError('Failed to set ACL for "' + filename +'": ' + err);
-                        }
-                    });
-                }
+                base.s3.putObjectAcl({
+                    Bucket: _this.bucketName,
+                    Key: _this.prefix + filename,
+                    ACL: acl
+                }, function(err, data) {
+                    if(err) {
+                        base.alertError('Failed to set ACL for "' + filename +'": ' + err);
+                    }
+                });
                 demo.attr('class', 'file_entry status_success');
                 demo.find('.process').css('opacity', 0);
                 delete _this.uploaders[filename];

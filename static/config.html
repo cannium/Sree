@@ -61,6 +61,12 @@
             </div>
         </div>
         <div class="form-group row">
+            <label for="acl" class="col-md-2 form-control-label">File-upload ACL</label>
+            <div class="col-md-8">
+                <input class="form-control" id="acl" placeholder="public-read">
+            </div>
+        </div>
+        <div class="form-group row">
             <div class="col-md-10">
                 <button class="btn btn-info fr" id="save">Save</button>
             </div>
@@ -79,11 +85,13 @@
             var endpoint = $('#endpointInput').val().trim(),
                 region = $('#regionInput').val().trim(),
                 accessKeyId = $('#accessKeyInput').val().trim(),
-                secretKeyId = $('#secretKeyInput').val().trim();
+                secretKeyId = $('#secretKeyInput').val().trim(),
+                acl = $('#acl').val().trim();
             window.localStorage.setItem('endpoint', endpoint);
             window.localStorage.setItem('region', region);
             window.localStorage.setItem('accessKeyId', accessKeyId);
             window.localStorage.setItem('secretKeyId', secretKeyId);
+            window.localStorage.setItem('acl', acl);
             saveButton.blur();
             saveButton.text('Saved');
             saveButton.attr('class', 'btn btn-success fr');
@@ -92,11 +100,13 @@
         var endpoint = window.localStorage.getItem('endpoint'),
             region = window.localStorage.getItem('region'),
             accessKeyId = window.localStorage.getItem('accessKeyId'),
-            secretKeyId = window.localStorage.getItem('secretKeyId');
+            secretKeyId = window.localStorage.getItem('secretKeyId'),
+            acl = window.localStorage.getItem('acl');
         $('#endpointInput').val(endpoint);
         $('#regionInput').val(region);
         $('#accessKeyInput').val(accessKeyId);
         $('#secretKeyInput').val(secretKeyId);
+        $('#acl').val(acl);
 
         $('input').on('input', function() {
             saveButton.blur();

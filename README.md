@@ -1,3 +1,4 @@
+
 Sree
 =========
 **_S3 client for human beings_**
@@ -30,7 +31,7 @@ Configurations are saved in your browser and not disclosed to anyone else.
 # Technical Details
 
 - In order to view your files in browser, Sree configures bucket CORS for you when creating buckets. See [Cross-Origin Resource Sharing (CORS)](http://docs.aws.amazon.com/AWSJavaScriptSDK/guide/browser-configuring.html#Cross-Origin_Resource_Sharing__CORS_) for more details.
-- Files uploaded via Sree are set as `public-read` as default so as to be downloadable. Future versions of Sree will make file ACLs configurable.
+- Files uploaded via Sree are set as `public-read` as default so as to be downloadable. ~~Future versions of Sree will make file ACLs configurable.~~
 
 # Contributing
 
