@@ -161,12 +161,24 @@
         };
         var loadTable = function () {
             $('#loading').show();
-            var presignedUrl = base.getSignedUrl('listBuckets');
+            var date = new Date().toGMTString();
+            var method = "GET";
+            var buf = "";
+            buf += method + "\n" + "\n" + "\n" + "\n";
+            buf += "x-amz-date:" + date +"\n";
+            // we send the whole url because the api-server may not know
+            // where the s3 backend is
+            buf += "/";
+            var sig = AWS.util.crypto.hmac(AWS.config.secretAccessKey,
+                    buf, 'base64', 'sha1');
+            var AWSAuth = "AWS " + AWS.config.accessKeyId + ":" + sig;
+            var corsurl = AWS.config.endpoint + '/';
+            // Data needed for signature
             $.ajax({
                 url: "/getservice",
                 type: 'POST',
                 contentType: 'application/json; charset=UTF-8',
-                data: JSON.stringify({url: presignedUrl}),
+                data: JSON.stringify({'url': corsurl, 's3auth': AWSAuth, 'date': date}),
                 success: function(data, status, xhr) {
                     if(!data) {
                         base.alertError('Incorrect response from server, cannot list buckets');

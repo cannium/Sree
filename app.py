@@ -110,11 +110,15 @@ def putcors():
 @app.route("/getservice", methods = ['POST'])
 def listbucketsurl():
   url = from_request(request, 'url')
+  s3auth = from_request(request, 's3auth')
+  date = from_request(request, 'date')
 
   storage = StringIO()
   c = pycurl.Curl()
   c.setopt(pycurl.URL, url)
   c.setopt(c.WRITEFUNCTION, storage.write)
+  c.setopt(pycurl.HTTPHEADER, ['Authorization: ' + s3auth,
+                               'x-amz-date: ' + date])
   c.perform()
   statuscode = c.getinfo(c.HTTP_CODE)
   c.close()
