@@ -37,35 +37,35 @@
     </div>
     <div class="panel_body">
         <div class="form-group row">
-            <label for="endpointInput" class="col-md-2 form-control-label">S3 Endpoint</label>
+            <label for="endpointInput" class="col-md-2 form-control-label">Host Endpoint</label>
             <div class="col-md-8">
-                <input class="form-control" id="endpointInput" placeholder="http://s3.amazonaws.com">
+                <input class="form-control" id="endpointInput" placeholder="Enter the host endpoint with http://">
             </div>
         </div>
-        <div class="form-group row">
+        <!--<div class="form-group row">
             <label for="regionInput" class="col-md-2 form-control-label">Region</label>
             <div class="col-md-8">
-                <input class="form-control" id="regionInput" placeholder="us-east-1">
+                <input class="form-control" id="regionInput" placeholder="Keep Blank for FK internal use">
             </div>
-        </div>
+        </div>-->
         <div class="form-group row">
-            <label for="accessKeyInput" class="col-md-2 form-control-label">Access Key ID</label>
+            <label for="accessKeyInput" class="col-md-2 form-control-label">Access Key</label>
             <div class="col-md-8">
                 <input class="form-control" id="accessKeyInput" placeholder="">
             </div>
         </div>
         <div class="form-group row">
-            <label for="secretKeyInput" class="col-md-2 form-control-label">Secret Access Key</label>
+            <label for="secretKeyInput" class="col-md-2 form-control-label">Secret Key</label>
             <div class="col-md-8">
                 <input class="form-control" id="secretKeyInput" placeholder="">
             </div>
         </div>
-        <div class="form-group row">
+        <!--<div class="form-group row">
             <label for="acl" class="col-md-2 form-control-label">File-upload ACL</label>
             <div class="col-md-8">
-                <input class="form-control" id="acl" placeholder="public-read">
+                <input class="form-control" id="acl" placeholder="Keep Blank">
             </div>
-        </div>
+        </div>-->
         <div class="form-group row">
             <div class="col-md-10">
                 <button class="btn btn-info fr" id="save">Save</button>
@@ -83,10 +83,14 @@
         var saveButton = $('#save');
         saveButton.click(function() {
             var endpoint = $('#endpointInput').val().trim(),
-                region = $('#regionInput').val().trim(),
+                region = ''//$('#regionInput').val().trim(),
                 accessKeyId = $('#accessKeyInput').val().trim(),
                 secretKeyId = $('#secretKeyInput').val().trim(),
-                acl = $('#acl').val().trim();
+                acl = ''//$('#acl').val().trim();
+
+            if (!endpoint.includes('http://')){
+                endpoint='http://'+endpoint;
+            }
             window.localStorage.setItem('endpoint', endpoint);
             window.localStorage.setItem('region', region);
             window.localStorage.setItem('accessKeyId', accessKeyId);

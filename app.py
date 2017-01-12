@@ -71,6 +71,7 @@ def delete():
 @app.route("/putcors", methods = ['PUT'])
 def putcors():
   corsurl = from_request(request, 'url')
+
   s3auth = from_request(request, 's3auth')
   date = from_request(request, 'date')
 
@@ -107,12 +108,11 @@ def putcors():
      resp = Response(response='Unknown Error', status=500)
   return resp
 
-@app.route("/getservice", methods = ['POST'])
+@app.route("/getservice", methods = ['GET','POST'])
 def listbucketsurl():
   url = from_request(request, 'url')
   s3auth = from_request(request, 's3auth')
   date = from_request(request, 'date')
-
   storage = StringIO()
   c = pycurl.Curl()
   c.setopt(pycurl.URL, url)
