@@ -241,6 +241,7 @@ define(['base'], function (base) {
             }, function(err, data) {
                 if(err) {
                     base.alertError('Failed to list objects: ' + err.message);
+                    $('#loading').hide();
                     console.log(err);
                     return;
                 }

@@ -38,7 +38,7 @@
     </div>
     <div class="panel_body">
         <div class="panel_btn ui-mb-xs">
-            <button id="addBtn" type="button" class="btn btn-primary ui-mr-xs">
+            <button id="addBtn" type="button" class="btn btn-primary ui-mr-xs" disabled>
                 <i class="icon-plus"> </i>Create Bucket
             </button>
         </div>
@@ -136,8 +136,8 @@
                 columnDefs: [{
                     targets: 0,
                     render: function(name) {
-                        return '<a href="/objects.html?bucket=' + name + '">' +
-                                name + '</a>'
+                        return '<div class="col-sm-6 small link_color ui-p-0 pointer setCors" data-bucket="' + name + '">'+name+'</div>'
+                        //return '<a href="/objects.html?bucket=' + name + '">' +name + '</a>'
                     }
                 }, {
                     targets: 1,
@@ -149,9 +149,8 @@
                     targets: 2,
                     render: function(name) {
                         return '<div class="col-sm-6 small link_color ui-p-0 pointer deleteBucket" ' +
-                                'data-bucket="' + name + '">Delete Bucket</div>' +
-                                '<div class="col-sm-6 small link_color ui-p-0 pointer setCors" ' +
-                                'data-bucket="' + name + '">Set CORS</div>';
+                                'data-bucket="' + name + '"></div>' +
+                                '<div class="col-sm-6 small link_color ui-p-0 pointer setCors" data-bucket="' + name + '"></div>';
                     }
                 }, {
                     targets: '_all',
@@ -302,23 +301,20 @@
         $('tbody').on('click', '.setCors', function() {
             var bucketName = $(this).attr('data-bucket');
             $('#corsBucket').text(bucketName);
-            $('#corsModal').modal('show');
-        });
-        $('#corsSubmit').click(function () {
-            var bucketName = $('#corsBucket').text();
-            $('#corsModal').modal('hide');
-            $('#loading').show();
+            //$('#corsModal').modal('show');
             putCors(bucketName, function(data) {
                 base.alert2('Bucket "' + bucketName + '" CORS configured');
-                $('#loading').hide();
+                //$('#loading').hide();
             }, function(XMLHttpRequest, textStatus, errorThrown) {
                 var errorInfo = XMLHttpRequest.responseText;
                 base.alertError(errorInfo == "" ?
                 'Failed to configure CORS for bucket "' + bucketName + '"' : errorInfo);
-                $('#loading').hide();
+                //$('#loading').hide();
             });
-        });
+            window.location.href = "/objects.html?bucket=" + bucketName;
     });
+    });
+
 </script>
 </body>
 </html>
