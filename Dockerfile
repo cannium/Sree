@@ -1,10 +1,11 @@
-FROM python:2.7
+FROM centos:7.2.1511
 
 WORKDIR /sree
-ADD static /sree
-ADD xmlparser.py /sree
-ADD app.py  /sree
+COPY ["static", "/sree/static"]
+COPY ["xmlparser.py", "app.py", "/sree/"]
 
+RUN yum install -y epel-release
+RUN yum install -y python2-pip
 RUN pip install flask pycurl
 
 ENTRYPOINT ["python", "/sree/app.py"]
