@@ -6,6 +6,6 @@ COPY ["xmlparser.py", "app.py", "/sree/"]
 
 RUN yum install -y epel-release
 RUN yum install -y python2-pip
-RUN pip install flask pycurl
+RUN pip install flask requests
 
 ENTRYPOINT ["python", "/sree/app.py"]
