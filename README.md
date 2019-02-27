@@ -12,7 +12,7 @@ Sree enables you to easily manage your files through Amazon S3 protocol. Simply 
 ```
 > git clone https://github.com/cannium/Sree.git
 > cd Sree
-> sudo pip install flask pycurl
+> sudo pip install flask 
 > python app.py
 ```
 
