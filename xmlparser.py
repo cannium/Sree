@@ -45,13 +45,10 @@ def getTreeFromXml(xml):
         if xmlns:
             tree.attrib['xmlns'] = xmlns
         return tree
-    except ExpatError, e:
-        error(e)
-        raise Exceptions.ParameterError("Bucket contains invalid filenames.")
-    except Exception, e:
-        error(e)
-        error(xml)
-        raise
+    except ExpatError:
+        raise Exception("Bucket contains invalid filenames.")
+    except Exception as e:
+        raise e
 
 def getListFromXml(xml, node):
     tree = getTreeFromXml(xml)
